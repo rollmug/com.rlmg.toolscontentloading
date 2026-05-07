@@ -20,22 +20,22 @@
     {
       "displayName": "Common Example Assets",
       "description": "Shared assets necessary for most examples.",
-      "path": "Samples~/Common Example Assets"
+      "path": "Samples/Common Example Assets"
     },
     {
       "displayName": "Config Example",
       "description": "Demonstrates use of ContentLoader for a config.json file.",
-      "path": "Samples~/Config Example"
+      "path": "Samples/Config Example"
     },
     {
       "displayName": "Local Media Example",
       "description": "Demonstrates use of ContentLoader and MediaLoadingUtils for loading content and images.",
-      "path": "Samples~/Local Media Example"
+      "path": "Samples/Local Media Example"
     },
     {
       "displayName": "GraphQL Content Example",
       "description": "Demonstrates use of GraphQLLoader with downloading remote images.",
-      "path": "Samples~/GraphQL Content Example"
+      "path": "Samples/GraphQL Content Example"
     }
   ]
 }
