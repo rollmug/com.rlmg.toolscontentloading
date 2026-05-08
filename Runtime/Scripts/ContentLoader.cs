@@ -9,10 +9,21 @@
 
     public class ContentLoader : MonoBehaviour
 	{
-		/// <summary>
+        /// <summary>
+        /// Location where local content file (e.g. json) and mediaCache folder will be saved.
+        /// </summary>
+        [Serializable]
+        protected enum ContentLocationRoot
+        {
+            StreamingAssets = 0,
+            Desktop = 1,
+            Application = 2 // see https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Application-dataPath.html for where Application.dataPath points to
+        }
+
+        /// <summary>
         /// If true, LoadContent is called on Awake
         /// </summary>
-		[SerializeField]
+        [SerializeField]
 		protected bool loadOnAwake = true;
 
 		/// <summary>
@@ -39,27 +50,21 @@
         protected string contentFileName = "content.json";
 
         /// <summary>
-        /// Location where local content file (e.g. json) and mediaCache folder will be saved.
-        /// </summary>
-        protected enum CONTENT_LOCATION
-        {
-            StreamingAssets,
-            Desktop,
-            Application
-        }
-
-        /// <summary>
         /// Determines where local content file (e.g. json) and mediaCache folder will be saved.
         /// </summary>
         [SerializeField]
-        protected CONTENT_LOCATION contentLocation = CONTENT_LOCATION.StreamingAssets;
+        protected ContentLocationRoot contentLocationRoot = ContentLocationRoot.StreamingAssets;
+
+        /// <summary>
+        /// Name of subdirectory where local content file (e.g. json) and mediaCache folder will be saved within the contentLocation.
+        /// </summary>
+        [SerializeField]
+        protected string ContentDirName = "RLMGExternalData";
 
         /// <summary>
         /// Is set to true after loading the content the first time.
         /// </summary>
         public bool DidLoadSucceed = false;
-
-		protected string lastLoadedText = null;
 
 		/// <summary>
 		/// Callback event at start of LoadContentCoroutine
@@ -93,17 +98,22 @@
 			{
 				string path = "";
 
-				if (contentLocation == CONTENT_LOCATION.StreamingAssets)
+                switch (contentLocationRoot)
+                {
+                    case ContentLocationRoot.StreamingAssets:
+                        path = Application.streamingAssetsPath;
+                        break;
+                    case ContentLocationRoot.Desktop:
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                        break;
+                    case ContentLocationRoot.Application:
+                        path = Path.Combine(Application.dataPath, "..");
+                        break;
+                }
+
+				if (!string.IsNullOrEmpty(ContentDirName))
 				{
-					path = Application.streamingAssetsPath;
-				}
-				if (contentLocation == CONTENT_LOCATION.Desktop)
-				{
-					path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-				}
-				else if (contentLocation == CONTENT_LOCATION.Application)
-				{
-					path = Path.Combine(Application.dataPath, "..");
+					path = Path.Combine(path, ContentDirName);
 				}
 
 				if (!Directory.Exists(path))
@@ -149,14 +159,15 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool DoOverwriteMedia = false;
 
         protected virtual void Awake()
 		{
-			if (Application.isEditor)
-				contentLocation = CONTENT_LOCATION.StreamingAssets;
-
-			if (loadOnAwake)
+            // Do loading
+            if (loadOnAwake)
 				LoadContent();
 		}
 
@@ -295,34 +306,6 @@
 		{
 			yield break;
 		}
-
-        #region Save Content File to Disk
-        /// <summary>
-        /// Intended to be overwritten with formatting method of your choice,
-        /// as JsonUtility does not provided a class-agnostic utility function for this.
-        /// 
-        /// // With JsonUtility, you would do:
-        /// return JsonUtility.ToJson(JsonUtility.FromJson<T>(json), true);
-        /// // where T is the System.Serializable class structure of your json data.
-        /// 
-        /// Yes, that is a redundant FromJson and ToJson.
-        /// </summary>
-        /// <param name="json"></param>
-        /// <returns></returns>
-        public virtual string PrettifyJson(string json)
-        {
-            return json;
-        }
-
-		/// <summary>
-		/// Write text to disk at LocalContentPath
-		/// </summary>
-		/// <param name="text"></param>
-		public virtual void SaveContentDataToDisk(string text)
-		{
-			File.WriteAllText(localContentPath, text);
-		}
-        #endregion
 
         #region Save Media to Disk
         /// <summary>

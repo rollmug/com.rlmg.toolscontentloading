@@ -33,9 +33,24 @@
       "path": "Samples/Local Media Example"
     },
     {
-      "displayName": "GraphQL Content Example",
+      "displayName": "GraphQL Content with Caching Example",
       "description": "Demonstrates use of GraphQLLoader with downloading remote images.",
       "path": "Samples/GraphQL Content Example"
+    },
+    {
+      "displayName": "CSV Example",
+      "description": "Demonstrates use of CSVLoader.",
+      "path": "Samples/CSV Example"
+    },
+    {
+      "displayName": "Sequential Loaders Example",
+      "description": "Shows how loading from different sources might be ordered.",
+      "path": "Samples/Sequential Loaders Example"
+    },
+    {
+      "displayName": "Caching Async Example",
+      "description": "Demonstrates use of ThreadedCache, for when loading from disk can't block execution on the main thread.",
+      "path": "Samples/Caching Async Example"
     }
   ],
   "_fingerprint": "34d86a459321e5e157d966e3da6a9894103b8c67"
