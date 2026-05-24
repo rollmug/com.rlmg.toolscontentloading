@@ -241,7 +241,7 @@ namespace rlmg.Tools.ContentLoading
                 return;
 
             UseServer = configData.useServer;
-            cacher.DoCache = configData.doCache;
+            cacher.DoCacheText = configData.doCache;
 
             if (configData.requestMode != RequestModeOption.NoOverride)
                 requestMode = (RequestMode)configData.requestMode;
@@ -430,9 +430,9 @@ namespace rlmg.Tools.ContentLoading
         {
             if (string.IsNullOrEmpty(webRequest?.downloadHandler?.text)) { yield break; }
 
-            if (cacher.DoCache)
+            if (cacher.DoCacheText)
                 // Only save on remote CMS success, as opposed to saving even when loading locally
-                cacher.CacheContent(webRequest.downloadHandler.text, localContentPath);
+                cacher.CacheText(webRequest.downloadHandler.text, localContentPath);
         }
 
         /// <summary>

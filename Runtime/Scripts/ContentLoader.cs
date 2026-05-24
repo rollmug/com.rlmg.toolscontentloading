@@ -69,7 +69,7 @@
 		/// <summary>
 		/// Callback event at start of LoadContentCoroutine
 		/// </summary>
-		public UnityEvent AllLoadingStarted;
+		public UnityEvent AllLoadingStarting;
 
 		/// <summary>
 		/// 
@@ -134,36 +134,6 @@
 			}
         }
 
-		/// <summary>
-		/// Name of media directory where media may be saved to.
-		/// </summary>
-		[Header("Media Settings")]
-        [SerializeField]
-        protected string localMediaCacheDirectoryName = "mediaCache";
-
-        /// <summary>
-        /// Path to directory where media may be saved to.
-        /// </summary>
-        protected string localMediaCacheDirectoryPath
-        {
-            get
-            {
-                string directoryName = string.IsNullOrEmpty(localMediaCacheDirectoryName) ? "mediaCache" : localMediaCacheDirectoryName;
-
-                string path = Path.Combine(LocalContentDirectory, directoryName);
-
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                return path;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool DoOverwriteMedia = false;
-
         protected virtual void Awake()
 		{
             // Do loading
@@ -191,7 +161,7 @@
 		{
 			DidLoadSucceed = false;
 
-			AllLoadingStarted?.Invoke();
+			AllLoadingStarting?.Invoke();
 
 			if (doLoadContent && (!Application.isEditor || canUseInEditor))
 			{
@@ -306,93 +276,6 @@
 		{
 			yield break;
 		}
-
-        #region Save Media to Disk
-        /// <summary>
-        /// Format path for a given media file in the LocalMediaCacheDirectory
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <returns>Path to file</returns>
-        public string GetLocalMediaPath(string filename)
-        {
-            string path = Path.Combine(localMediaCacheDirectoryPath, filename);
-            return path;
-        }
-
-        /// <summary>
-        /// Format path and create subdirectories for given media file in the LocalMediaCacheDirectory
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="subDirectoryPathFragment">Path fragment of subdirectories of LocalMediaCacheDirectory</param>
-        /// <returns></returns>
-        public string GetLocalMediaPath(string filename, string subDirectoryPathFragment)
-        {
-            string subDirectoryPathFull = Path.Combine(localMediaCacheDirectoryPath, subDirectoryPathFragment);
-
-            if (!Directory.Exists(subDirectoryPathFull))
-                Directory.CreateDirectory(subDirectoryPathFull);
-
-            return Path.Combine(subDirectoryPathFull, filename);
-        }
-
-        /// <summary>
-        /// Download the given file and save to disk
-        /// </summary>
-        /// <param name="onlinePath">URL to download from</param>
-        /// <param name="localPath">Local path to save to</param>
-        /// <returns></returns>
-        public virtual IEnumerator SaveMediaToDisk(string onlinePath, string localPath, bool isTexture = false)
-        {
-            // Skip for existing files if we don't want to overwrite them
-            if (!DoOverwriteMedia && File.Exists(localPath))
-                yield break;
-
-            UnityWebRequest webRequest = null;
-            if (isTexture)
-                webRequest = UnityWebRequestTexture.GetTexture(onlinePath);
-            else
-                webRequest = UnityWebRequest.Get(onlinePath);
-
-            yield return webRequest.SendWebRequest();
-
-            switch (webRequest.result)
-            {
-                case UnityWebRequest.Result.ConnectionError:
-                case UnityWebRequest.Result.DataProcessingError:
-                case UnityWebRequest.Result.ProtocolError:
-                    yield return StartCoroutine(SaveMediaToDiskFailure(webRequest));
-                    break;
-                case UnityWebRequest.Result.Success:
-                    File.WriteAllBytes(localPath, webRequest.downloadHandler.data);
-                    yield return StartCoroutine(SaveMediaToDiskSuccess(webRequest.result));
-                    break;
-                default:
-                    yield return StartCoroutine(SaveMediaToDiskFailure(webRequest));
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Callback after successfully downloading and saving media to disk
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        protected virtual IEnumerator SaveMediaToDiskSuccess(UnityWebRequest.Result result)
-        {
-            yield return null;
-        }
-
-        /// <summary>
-        /// Callback after failed media download
-        /// </summary>
-        /// <param name="request">The failed request</param>
-        /// <returns></returns>
-        protected virtual IEnumerator SaveMediaToDiskFailure(UnityWebRequest request)
-        {
-            Debug.LogError("Save Media to Disk Failure: " + request.error + "\n" + request.downloadHandler.error);
-            yield return null;
-        }
-        #endregion
     }
 }
 
