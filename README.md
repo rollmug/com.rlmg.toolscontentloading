@@ -2,8 +2,8 @@ A set of Monobehaviours and static Utility classes for Rollmuggers to use when l
 
 See [Wiki page here](https://rlmg.bitdocs.ai/share/d/Lul9S5TDc2reWbXJ) for installation and user guide.
 
-## Owner
+### Owner
 Josh (RLMG) @joshkery-rlmg
 
-## Contributors
+### Contributors
 Josh (Freelance) @joshuakery
