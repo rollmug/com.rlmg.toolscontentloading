@@ -14,7 +14,10 @@ namespace rlmg.Tools.ContentLoading.Examples
             get
             {
                 string directoryName = string.IsNullOrEmpty(imagesSubfolder) ? "images" : imagesSubfolder;
-                return Path.Combine(LocalContentDirectory, directoryName);
+
+                return Path.Combine(
+                        LocalContentDirectory,
+                        directoryName);
             }
         }
 
@@ -29,12 +32,14 @@ namespace rlmg.Tools.ContentLoading.Examples
 
             if (Data.items == null) yield break;
 
-            // Load each image in the list of images. Note that this is a very basic implementation.
+            // Load each image in the list of images.
             foreach (ExampleContentItemData item in Data.items)
             {
                 if (string.IsNullOrEmpty(item.image)) continue;
 
-                string filepath = Path.Combine(imagesSubfolderPath, item.image);
+                string filepath = Path.Combine(
+                        imagesSubfolderPath,
+                        item.image);
 
                 // We supply a callback here because coroutines don't have return values.
                 yield return MediaLoadingUtility.LoadTextureCoroutine(filepath, tex =>

@@ -92,7 +92,7 @@
         /// Path to directory where local content file (e.g. json) and mediaCache folder will be saved.
         /// Based on contentLocation. Either StreamingAssets, Desktop, or Application folders.
         /// </summary>
-        public string LocalContentDirectory
+        public virtual string LocalContentDirectory
 		{
 			get
 			{
@@ -126,11 +126,13 @@
 		/// <summary>
 		/// Path to file where local content (e.g. json) will be saved.
 		/// </summary>
-		protected string localContentPath
+		protected virtual string localContentPath
         {
 			get
             {
-				return Path.Combine(LocalContentDirectory, contentFileName);
+				return Path.Combine(
+						LocalContentDirectory,
+						contentFileName);
 			}
         }
 
@@ -197,7 +199,9 @@
 		/// <returns></returns>
 		protected virtual IEnumerator LoadLocalContent()
         {
-			using (UnityWebRequest webRequest = UnityWebRequest.Get(localContentPath))
+			using (UnityWebRequest webRequest = UnityWebRequest.Get(
+				FileLoadingUtility.GetProperUri(
+                    localContentPath)))
 			{
 				yield return webRequest.SendWebRequest();
 

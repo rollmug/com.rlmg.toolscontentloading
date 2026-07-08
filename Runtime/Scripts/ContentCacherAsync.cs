@@ -32,7 +32,7 @@ namespace rlmg.Tools.ContentLoading
         private CancellationTokenSource cacheCancellation;
 
         // Public state for other UI if needed
-        public bool IsCaching { get; private set; }
+        public virtual bool IsCaching { get; private set; }
 
         protected override void Awake()
         {
@@ -82,14 +82,19 @@ namespace rlmg.Tools.ContentLoading
                 cacheCancellation.Token);
         }
 
+        private void DisposeCancellation()
+        {
+            cacheCancellation?.Cancel();
+            cacheCancellation?.Dispose();
+            cacheCancellation = null;
+        }
+
         /// <summary>
         /// Reset cancellation token for a new write
         /// </summary>
         private void ResetCancellation()
         {
-            cacheCancellation?.Cancel();
-            cacheCancellation?.Dispose();
-
+            DisposeCancellation();
             cacheCancellation = new CancellationTokenSource();
         }
 
@@ -103,10 +108,13 @@ namespace rlmg.Tools.ContentLoading
             if (cacheCancellation == null)
                 return;
 
-            cacheCancellation.Cancel();
+            if (!cacheCancellation.IsCancellationRequested)
+            {
+                cacheCancellation.Cancel();
 
-            if (doDebugLog)
-                Debug.Log("Cancelling cache write...");
+                if (doDebugLog)
+                    Debug.Log("Cancelling cache write...");
+            }
         }
 
         /// <summary>
@@ -172,12 +180,16 @@ namespace rlmg.Tools.ContentLoading
                 await Awaitable.MainThreadAsync();
 
                 Debug.LogError("Failed to cache content: " + ex.Message);
+
+                CancelCaching();
             }
             finally
             {
                 await Awaitable.MainThreadAsync();
 
                 cacheSemaphore.Release();
+
+                DisposeCancellation();
 
                 IsCaching = false;
             }
@@ -240,6 +252,8 @@ namespace rlmg.Tools.ContentLoading
                 await Awaitable.MainThreadAsync();
 
                 cacheSemaphore.Release();
+
+                DisposeCancellation();
 
                 IsCaching = false;
             }

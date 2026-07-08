@@ -1101,10 +1101,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 24
+    m_FontSize: 14
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 2
+    m_MinSize: 1
     m_MaxSize: 40
     m_Alignment: 3
     m_AlignByGeometry: 0
@@ -1112,7 +1112,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'ON RELOAD, CONFIGURE LOADER WITH CONFIG FILE '
+  m_Text: ON RELOAD, CONFIGURE LOADER WITH CONFIG FILE (THIS WILL OVERRIDE THE SETTINGS
+    TO THE RIGHT)
 --- !u!222 &445396338
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2207,7 +2208,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: This instantiates prefabs based on the content loaded. There should be
-    the first three Pokemon from the PokeAPI loaded.
+    the first three Pokemon from the PokeAPI loaded. If the server is not used, no
+    images will be loaded, because this example does not cache images.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2234,8 +2236,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
