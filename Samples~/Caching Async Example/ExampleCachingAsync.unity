@@ -519,7 +519,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1408708487}
         m_TargetAssemblyTypeName: rlmg.Tools.ContentLoading.ContentCacherAsync, RLMG.Tools_contentloading
-        m_MethodName: CancelCacheWrite
+        m_MethodName: CancelCaching
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -33,7 +33,9 @@ namespace rlmg.Tools.ContentLoading.Examples
         {
             get
             {
-                return Path.Combine(LocalContentDirectory, cacheFileName);
+                return Path.Combine(
+                        LocalContentDirectory,
+                        cacheFileName);
             }
         }
 

@@ -5,5 +5,7 @@ See [Wiki page here](https://rlmg.bitdocs.ai/share/d/Lul9S5TDc2reWbXJ) for insta
 ### Maintainer
 Josh (RLMG) @joshkery-rlmg
 
-### Contributors
-Josh (Freelance) @joshuakery
+### Credits
+- Chris @chrisw-rlmg
+- Jialu @Jialus
+- Josh (Freelance) @joshuakery

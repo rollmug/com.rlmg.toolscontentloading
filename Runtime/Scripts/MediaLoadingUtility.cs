@@ -1,9 +1,8 @@
 namespace rlmg.Tools.ContentLoading
 {
     using System;
-    using System.IO;
     using System.Collections;
-    using System.Collections.Generic;
+    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using UnityEngine;
@@ -28,7 +27,7 @@ namespace rlmg.Tools.ContentLoading
             ".MP4", ".MOV"
         };
 
-        public static readonly char[] PathSplitCharacters = new char[] { '/', '\\' };
+        
 
         /// <summary>
         /// Maximum number of simultaneous downloads.
@@ -82,7 +81,9 @@ namespace rlmg.Tools.ContentLoading
             Action<byte[]> onSuccess,
             Action<string, string> onError = null)
         {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+            using (UnityWebRequest webRequest = UnityWebRequest.Get(
+                FileLoadingUtility.GetProperUri(
+                    uri)))
             {
                 yield return webRequest.SendWebRequest();
 
@@ -121,7 +122,9 @@ namespace rlmg.Tools.ContentLoading
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using UnityWebRequest request = UnityWebRequest.Get(uri);
+                using UnityWebRequest request = UnityWebRequest.Get(
+                    FileLoadingUtility.GetProperUri(
+                        uri));
 
                 using CancellationTokenRegistration registration =
                     cancellationToken.Register(() =>
@@ -389,22 +392,6 @@ namespace rlmg.Tools.ContentLoading
             else
                 return FileType.Unknown;
         }
-
-        // =======================================================================
-        // PATHS
-        // =======================================================================
-
-        public static string RemoveStartingPathSplitCharacter(string path)
-        {
-            foreach (char c in PathSplitCharacters)
-            {
-                if (path.StartsWith(c))
-                    return path.Substring(1);
-            }
-            return path;
-        }
-
-        
     }
 
 }

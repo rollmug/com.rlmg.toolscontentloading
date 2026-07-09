@@ -37,11 +37,13 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// The file path to this loader's config file, which contains serverURL, graphEndpoint, assetsEndpoint, authToken, operationName, etc.
         /// </summary>
-        protected string localLoaderConfigFilePath
+        protected virtual string localLoaderConfigFilePath
         {
             get
             {
-                return Path.Combine(LocalContentDirectory, loaderConfigFileName);
+                return Path.Combine(
+                        LocalContentDirectory,
+                        loaderConfigFileName);
             }
         }
 
@@ -66,11 +68,13 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// The file path to the query text doc
         /// </summary>
-        protected string localQueryFilePath
+        protected virtual string localQueryFilePath
         {
             get
             {
-                return Path.Combine(LocalContentDirectory, queryFileName);
+                return Path.Combine(
+                        LocalContentDirectory,
+                        queryFileName);
             }
         }
 
@@ -99,7 +103,7 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// URL for GraphQL queries.
         /// </summary>
-        protected string graphURL
+        protected virtual string graphURL
         {
             get
             {
@@ -115,7 +119,7 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// URL for asset REST requests.
         /// </summary>
-        public string AssetsURL
+        public virtual string AssetsURL
         {
             get
             {
@@ -132,7 +136,7 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// URL for REST requests that return json data
         /// </summary>
-        protected string restURL
+        protected virtual string restURL
         {
             get
             {
@@ -206,14 +210,16 @@ namespace rlmg.Tools.ContentLoading
             if (!doLoadLoaderConfigFromDisk)
                 yield break;
 
-            using (UnityWebRequest configRequest = UnityWebRequest.Get(localLoaderConfigFilePath))
+            using (UnityWebRequest configRequest = UnityWebRequest.Get(
+                FileLoadingUtility.GetProperUri(
+                    localLoaderConfigFilePath)))
             {
                 yield return configRequest.SendWebRequest();
 
                 if (configRequest.result != UnityWebRequest.Result.Success)
                 {
                     Debug.LogError(string.Format("Loading local loader config file error: {0}\n{1}", configRequest.error, configRequest.downloadHandler.data));
-                    
+
                     AnySupportLoadFailed?.Invoke(string.Format("Loading local loader config file error: {0}\n{1}", configRequest.error, configRequest.downloadHandler.data));
                     yield break; // if we can't load the loader config, we can't continue with loading the graph content
                 }
@@ -286,7 +292,9 @@ namespace rlmg.Tools.ContentLoading
             if (!doLoadQueryFromDisk)
                 yield break;
 
-            using (UnityWebRequest queryRequest = UnityWebRequest.Get(localQueryFilePath))
+            using (UnityWebRequest queryRequest = UnityWebRequest.Get(
+                FileLoadingUtility.GetProperUri(
+                    localQueryFilePath)))
             {
                 yield return queryRequest.SendWebRequest();
 

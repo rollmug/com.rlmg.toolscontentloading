@@ -33,16 +33,20 @@ namespace rlmg.Tools.ContentLoading
         /// <summary>
         /// Path to directory where media may be saved to.
         /// </summary>
-        protected string localMediaCacheDirectoryPath
+        protected virtual string localMediaCacheDirectory
         {
             get
             {
                 if (contentLoader == null)
                     return null;
 
-                string directoryName = string.IsNullOrEmpty(localMediaCacheDirectoryName) ? "mediaCache" : localMediaCacheDirectoryName;
+                string directoryName = string.IsNullOrEmpty(localMediaCacheDirectoryName) ?
+                    "mediaCache" :
+                    localMediaCacheDirectoryName;
 
-                string path = Path.Combine(contentLoader.LocalContentDirectory, directoryName);
+                string path = Path.Combine(
+                        contentLoader.LocalContentDirectory,
+                        directoryName);
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
@@ -173,12 +177,14 @@ namespace rlmg.Tools.ContentLoading
         /// <returns>Path to file</returns>
         public string GetLocalMediaPath(string filename)
         {
-            string path = localMediaCacheDirectoryPath;
+            string path = localMediaCacheDirectory;
 
             if (path == null)
                 return null;
 
-            return Path.Combine(path, filename);
+            return Path.Combine(
+                    path,
+                    filename);
         }
 
         /// <summary>
@@ -189,12 +195,14 @@ namespace rlmg.Tools.ContentLoading
         /// <returns></returns>
         public string GetLocalMediaPath(string filename, string subDirectoryPathFragment)
         {
-            string subDirectoryPathFull = Path.Combine(localMediaCacheDirectoryPath, subDirectoryPathFragment);
+            string subDirectoryPathFull = Path.Combine(localMediaCacheDirectory, subDirectoryPathFragment);
 
             if (!Directory.Exists(subDirectoryPathFull))
                 Directory.CreateDirectory(subDirectoryPathFull);
 
-            return Path.Combine(subDirectoryPathFull, filename);
+            return Path.Combine(
+                    subDirectoryPathFull,
+                    filename);
         }
 
         /// <summary>
