@@ -64,6 +64,10 @@ namespace rlmg.Tools.ContentLoading.Examples
         [Range(1, 32)]
         private int numConcurrentLoadsOnAwake = 8;
 
+        private int numImagesToLoad;
+
+        private int numImagesLoaded;
+
         public bool IsLoadingMedia { get; private set; }
 
         [SerializeField] Toggle toggleDoCache;
@@ -71,6 +75,20 @@ namespace rlmg.Tools.ContentLoading.Examples
         [SerializeField] Toggle toggleDoSkipExisting;
 
         public UnityEvent<PokemonSpecies> ItemLoaded;
+
+        /// <summary>
+        /// For loading progress display
+        /// </summary>
+        public override float LoadingProgress
+        {
+            get
+            {
+                if (numImagesToLoad == 0)
+                    return base.LoadingProgress;
+
+                return (float)numImagesLoaded / numImagesToLoad;
+            }
+        }
 
         protected override void Awake()
         {
@@ -95,8 +113,7 @@ namespace rlmg.Tools.ContentLoading.Examples
         {
             Data = JsonUtility.FromJson<PokemonGraphDataWrapper>(webRequest.downloadHandler.text).data.pokemonspecies;
 
-            if (UseServer)
-                yield return LoadImages();
+            yield return LoadImages();
         }
 
         /// <summary>
@@ -139,6 +156,9 @@ namespace rlmg.Tools.ContentLoading.Examples
         {
             if (Data == null)
                 yield break;
+
+            numImagesToLoad = Data.Length;
+            numImagesLoaded = 0;
 
             // Clean up any caching Coroutines or Tasks otherwise managed by cacher
             cacher.CancelCaching();
@@ -188,6 +208,8 @@ namespace rlmg.Tools.ContentLoading.Examples
                     item,
                     srcUri,
                     cacheUri);
+
+                numImagesLoaded++;
 
                 ItemLoaded?.Invoke(item);
             }
@@ -374,6 +396,9 @@ namespace rlmg.Tools.ContentLoading.Examples
                     }
 
                     item.Texture = texture;
+
+                    numImagesLoaded++;
+
                     ItemLoaded?.Invoke(item);
 
                     return; // exit early
@@ -388,6 +413,9 @@ namespace rlmg.Tools.ContentLoading.Examples
 
                 // Assign to item fields
                 item.Texture = tex;
+
+                numImagesLoaded++;
+
                 ItemLoaded?.Invoke(item);
             }
             else
@@ -405,6 +433,9 @@ namespace rlmg.Tools.ContentLoading.Examples
                 }
 
                 item.Texture = texture;
+
+                numImagesLoaded++;
+
                 ItemLoaded?.Invoke(item);
 
                 return;

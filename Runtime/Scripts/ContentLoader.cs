@@ -7,7 +7,8 @@
     using UnityEngine.Events;
     using UnityEngine.Networking;
 
-    public class ContentLoader : MonoBehaviour
+    public class ContentLoader : MonoBehaviour,
+		ILoadingProgressTracker
 	{
         /// <summary>
         /// Location where local content file (e.g. json) and mediaCache folder will be saved.
@@ -60,6 +61,11 @@
         /// </summary>
         [SerializeField]
         protected string ContentDirName = "RLMGExternalData";
+
+		/// <summary>
+		/// Is set to true while the loading routine runs
+		/// </summary>
+        protected bool isLoading;
 
         /// <summary>
         /// Is set to true after loading the content the first time.
@@ -136,6 +142,14 @@
 			}
         }
 
+		public virtual bool IsLoading => isLoading;
+
+		/// <summary>
+		/// Placeholder implementation of LoadingProgress
+		/// for overriding in subclasses
+		/// </summary>
+		public virtual float LoadingProgress => DidLoadSucceed ? 1f : 0f;
+
         protected virtual void Awake()
 		{
             // Do loading
@@ -161,6 +175,7 @@
 		/// <returns></returns>
 		public virtual IEnumerator LoadContentCoroutine()
 		{
+			isLoading = true;
 			DidLoadSucceed = false;
 
 			AllLoadingStarting?.Invoke();
@@ -172,6 +187,8 @@
 				else
 					yield return StartCoroutine(MainLoadContent());
 			}
+
+			isLoading = false;
 
 			AllLoadingFinished?.Invoke();
 		}
