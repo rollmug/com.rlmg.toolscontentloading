@@ -7,12 +7,12 @@ namespace rlmg.Tools.ContentLoading.Examples
     /// <summary>
     /// Example of subclassing ContentLoader
     /// </summary>
-    public class ExampleConfigLoader : ContentLoader
+    public class ExampleLocalLoader : ContentLoader
     {
         /// <summary>
         /// For access by other MonoBehaviours, as needed
         /// </summary>
-        public ConfigData Data;
+        public ExampleLocalData Data;
 
         /// <summary>
         /// The base method does nothing.
@@ -27,10 +27,10 @@ namespace rlmg.Tools.ContentLoading.Examples
 
             Debug.Log("Loaded content successfully!");
 
-            Data = JsonUtility.FromJson<ConfigData>(webRequest.downloadHandler.text);
+            Data = JsonUtility.FromJson<ExampleLocalData>(webRequest.downloadHandler.text);
 
             // One possible design would be to initialize configurable components here.
-            // e.g. AttractManager.timeout = Data.attractTimeout;
+            // e.g. AttractManager.timeout = Data.someData;
         }
     }
 }

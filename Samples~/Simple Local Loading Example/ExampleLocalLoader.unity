@@ -439,7 +439,7 @@ GameObject:
   - component: {fileID: 936408408}
   - component: {fileID: 936408409}
   m_Layer: 0
-  m_Name: Example Config Loader Listener
+  m_Name: Example Loader Listener
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -899,7 +899,7 @@ GameObject:
   - component: {fileID: 1408708485}
   - component: {fileID: 1408708486}
   m_Layer: 0
-  m_Name: Example Config Loader
+  m_Name: Example Local Loader
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -936,7 +936,7 @@ MonoBehaviour:
   doLoadContent: 1
   canUseInEditor: 1
   DoLoadLocalContentOnly: 0
-  contentFileName: config.json
+  contentFileName: example-data.json
   contentLocationRoot: 0
   ContentDirName: RLMGExternalData
   DidLoadSucceed: 0
@@ -953,8 +953,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   Data:
-    attractTimeout: 30
-    screenResolution: {x: 1920, y: 1080}
+    someData: 30
 --- !u!1 &1426815372
 GameObject:
   m_ObjectHideFlags: 0
