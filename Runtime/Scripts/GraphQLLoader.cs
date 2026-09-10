@@ -3,6 +3,7 @@ namespace rlmg.Tools.ContentLoading
     using System;
     using System.Collections;
     using System.IO;
+    using Newtonsoft.Json;
     using UnityEngine;
     using UnityEngine.Networking;
 
@@ -35,6 +36,12 @@ namespace rlmg.Tools.ContentLoading
         [SerializeField] protected string loaderConfigFileName = "server_config.json";
 
         /// <summary>
+        /// Used as the loader config if loading localLoaderConfigFilePath from disk fails (or fails to
+        /// parse) and this is assigned.
+        /// </summary>
+        [SerializeField] protected TextAsset fallbackConfigTextAsset;
+
+        /// <summary>
         /// The file path to this loader's config file, which contains serverURL, graphEndpoint, assetsEndpoint, authToken, operationName, etc.
         /// </summary>
         protected virtual string localLoaderConfigFilePath
@@ -47,7 +54,7 @@ namespace rlmg.Tools.ContentLoading
             }
         }
 
-        [Header("GraphQL Settings - Configurable by Config File")]
+        [Header("GraphQL Settings - Query - Configurable by Config File")]
         /// <summary>
         /// The mode of the request to be made.
         /// </summary>
@@ -64,6 +71,11 @@ namespace rlmg.Tools.ContentLoading
         /// </summary>
         [SerializeField]
         protected string queryFileName = "query.txt";
+
+        /// <summary>
+        /// Used as the query text if loading localQueryFilePath from disk fails and this is assigned.
+        /// </summary>
+        [SerializeField] protected TextAsset fallbackQueryTextAsset;
 
         /// <summary>
         /// The file path to the query text doc
@@ -84,6 +96,7 @@ namespace rlmg.Tools.ContentLoading
         [Multiline]
         [SerializeField] protected string queryText;
 
+        [Header("GraphQL Settings - Request - Configurable by Config File")]
         /// <summary>
         /// Whether to attempt to load content from the specified server.
         /// If false, will still attempt to load content from disk at localContentPath.
@@ -148,7 +161,16 @@ namespace rlmg.Tools.ContentLoading
         }
 
         /// <summary>
-        /// Any authentication token needed for the query.
+        /// Name of the environment variable to read the auth token from at runtime. Recommended over
+        /// authToken: the token is never written to a scene, prefab, or config file on disk. See
+        /// <see cref="GetAuthToken"/>.
+        /// </summary>
+        [SerializeField] protected string authTokenEnvironmentVariable = "RLMG_GRAPHQL_AUTH_TOKEN";
+
+        /// <summary>
+        /// Used only if authTokenEnvironmentVariable is blank, or unset in the environment. Avoid
+        /// setting this to a real token for anything other than local testing - unlike the environment
+        /// variable, it gets serialized into the scene/prefab (or server_config.json) in plain text.
         /// </summary>
         [SerializeField] protected string authToken;
 
@@ -157,15 +179,46 @@ namespace rlmg.Tools.ContentLoading
         /// </summary>
         [SerializeField] protected string operationName;
 
+        [Header("Retry")]
+        /// <summary>
+        /// Whether a failed remote request is retried (with backoff) before falling back to local content.
+        /// </summary>
+        [SerializeField] protected bool autoRetryFailedRequests = true;
+
+        /// <summary>Maximum retry attempts before falling back to local content. 0 = unlimited.</summary>
+        [SerializeField] protected int maxRetryAttempts = 3;
+
+        /// <summary>Delay before the first retry, in seconds.</summary>
+        [SerializeField] protected float initialRetryBackoffSeconds = 1f;
+
+        /// <summary>Upper bound on retry delay, in seconds.</summary>
+        [SerializeField] protected float maxRetryBackoffSeconds = 15f;
+
+        /// <summary>Multiplier applied to the retry delay after each attempt.</summary>
+        [SerializeField] protected float retryBackoffMultiplier = 2f;
+
         /// <summary>
         /// Manager class for caching.
         /// </summary>
         protected ContentCacher cacher;
 
+        [Header("Events")]
         /// <summary>
         /// If either the config loader or query loader failed.
         /// </summary>
         public UnityEngine.Events.UnityEvent<string> AnySupportLoadFailed;
+
+        /// <summary>
+        /// Invoked when a failed remote request is about to be retried, with the attempt number (1-based).
+        /// </summary>
+        public UnityEngine.Events.UnityEvent<int> RetryingRequest;
+
+        /// <summary>
+        /// Invoked when a remote request attempt fails but will be retried, with the failed
+        /// UnityWebRequest. Fires before <see cref="RetryingRequest"/>, and only when a retry is
+        /// actually going to happen (i.e. not on the final, fatal failure).
+        /// </summary>
+        public UnityEngine.Events.UnityEvent<UnityWebRequest> AttemptFailedButWillRetry;
 
 
         #region Graphql Loading
@@ -203,6 +256,8 @@ namespace rlmg.Tools.ContentLoading
         #region GraphQL Loading Steps
         /// <summary>
         /// Load the loader config from disk, which may contain settings for serverURL, graphEndpoint, assetsEndpoint, authToken, operationName, etc.
+        /// Falls back to <see cref="fallbackConfigTextAsset"/> (if assigned) when the on-disk file fails
+        /// to load or parse, writing it to disk so a valid file exists there next time.
         /// </summary>
         /// <returns></returns>
         protected virtual IEnumerator LoadLoaderConfig()
@@ -210,28 +265,16 @@ namespace rlmg.Tools.ContentLoading
             if (!doLoadLoaderConfigFromDisk)
                 yield break;
 
-            using (UnityWebRequest configRequest = UnityWebRequest.Get(
-                FileLoadingUtility.GetProperUri(
-                    localLoaderConfigFilePath)))
-            {
-                yield return configRequest.SendWebRequest();
-
-                if (configRequest.result != UnityWebRequest.Result.Success)
+            yield return FileLoadingUtility.LoadJsonWithFallbackCoroutine<CMSClientConfigData>(
+                localLoaderConfigFilePath,
+                fallbackConfigTextAsset,
+                "loader config file",
+                ApplyConfigSettings,
+                message =>
                 {
-                    Debug.LogError(string.Format("Loading local loader config file error: {0}\n{1}", configRequest.error, configRequest.downloadHandler.data));
-
-                    AnySupportLoadFailed?.Invoke(string.Format("Loading local loader config file error: {0}\n{1}", configRequest.error, configRequest.downloadHandler.data));
-                    yield break; // if we can't load the loader config, we can't continue with loading the graph content
-                }
-
-                Debug.Log(string.Format(
-                    "Successfully loaded {0} from disk. Attempting to use file contents to set loader settings for GraphQL endpoint {2} with file contents:\n{1}",
-                    loaderConfigFileName, configRequest.downloadHandler.text, graphURL
-                    ));
-
-                CMSClientConfigData configData = JsonUtility.FromJson<CMSClientConfigData>(configRequest.downloadHandler.text);
-                ApplyConfigSettings(configData);
-            }
+                    Debug.LogError(message);
+                    AnySupportLoadFailed?.Invoke(message);
+                });
         }
 
         /// <summary>
@@ -273,6 +316,9 @@ namespace rlmg.Tools.ContentLoading
             if (configData.restEndpoint != null)
                 restURLOrEndpoint = configData.restEndpoint;
 
+            if (configData.authTokenEnvironmentVariable != null)
+                authTokenEnvironmentVariable = configData.authTokenEnvironmentVariable;
+
             if (configData.authToken != null)
                 authToken = configData.authToken;
 
@@ -281,10 +327,53 @@ namespace rlmg.Tools.ContentLoading
 
             if (configData.queryFileName != null)
                 queryFileName = configData.queryFileName;
+
+            if (configData.autoRetryFailedRequests.HasValue)
+                autoRetryFailedRequests = configData.autoRetryFailedRequests.Value;
+
+            if (configData.maxRetryAttempts.HasValue)
+                maxRetryAttempts = configData.maxRetryAttempts.Value;
+
+            if (configData.initialRetryBackoffSeconds.HasValue)
+                initialRetryBackoffSeconds = configData.initialRetryBackoffSeconds.Value;
+
+            if (configData.maxRetryBackoffSeconds.HasValue)
+                maxRetryBackoffSeconds = configData.maxRetryBackoffSeconds.Value;
+
+            if (configData.retryBackoffMultiplier.HasValue)
+                retryBackoffMultiplier = configData.retryBackoffMultiplier.Value;
         }
 
         /// <summary>
-        /// Load query file from disk.
+        /// Resolves the auth token to send with requests: <see cref="authTokenEnvironmentVariable"/>
+        /// (if set and present in the environment) takes priority, falling back to
+        /// <see cref="authToken"/>. Override to source the token from elsewhere - just never log or
+        /// serialize the returned value.
+        /// </summary>
+        protected virtual string GetAuthToken()
+        {
+            if (!string.IsNullOrEmpty(authTokenEnvironmentVariable))
+            {
+                string fromEnvironment = Environment.GetEnvironmentVariable(authTokenEnvironmentVariable);
+                if (!string.IsNullOrEmpty(fromEnvironment))
+                    return fromEnvironment;
+            }
+
+            return authToken;
+        }
+
+        /// <summary>
+        /// Variables to send with the GraphQL query. Override to supply real variables - e.g. an
+        /// anonymous object, a Dictionary&lt;string, object&gt;, or a Newtonsoft.Json.Linq.JObject.
+        /// </summary>
+        protected virtual object GetGraphQLVariables()
+        {
+            return new { };
+        }
+
+        /// <summary>
+        /// Load query file from disk. Falls back to <see cref="fallbackQueryTextAsset"/> (if assigned)
+        /// when the on-disk file fails to load, writing it to disk so a valid file exists there next time.
         /// </summary>
         /// <returns></returns>
         protected virtual IEnumerator LoadQueryFromDisk()
@@ -292,31 +381,16 @@ namespace rlmg.Tools.ContentLoading
             if (!doLoadQueryFromDisk)
                 yield break;
 
-            using (UnityWebRequest queryRequest = UnityWebRequest.Get(
-                FileLoadingUtility.GetProperUri(
-                    localQueryFilePath)))
-            {
-                yield return queryRequest.SendWebRequest();
-
-                if (queryRequest.result != UnityWebRequest.Result.Success)
+            yield return FileLoadingUtility.LoadTextWithFallbackCoroutine(
+                localQueryFilePath,
+                fallbackQueryTextAsset,
+                "query file",
+                text => queryText = text,
+                message =>
                 {
-                    Debug.LogError(string.Format(
-                        "Loading local query file error: {0}\n{1}\n{2}",
-                        localQueryFilePath,
-                        queryRequest.error, queryRequest.downloadHandler.data)
-                        );
-
-                    AnySupportLoadFailed?.Invoke(string.Format("Loading local query file error: {0}\n{1}\n{2}", localQueryFilePath, queryRequest.error, queryRequest.downloadHandler.data));
-                    yield break;
-                }
-
-                Debug.Log(string.Format(
-                    "Successfully loaded {0} from disk. Attempting to post to GraphQL endpoint {2} with file contents:\n{1}",
-                    queryFileName, queryRequest.downloadHandler.text, graphURL
-                ));
-
-                queryText = queryRequest.downloadHandler.text;
-            }
+                    Debug.LogError(message);
+                    AnySupportLoadFailed?.Invoke(message);
+                });
         }
         #endregion
 
@@ -336,39 +410,18 @@ namespace rlmg.Tools.ContentLoading
             if (string.IsNullOrEmpty(queryText))
             {
                 DidLoadSucceed = false;
-                yield return OnRemoteFatalFailure(null);
+                yield return OnRemoteFatalFailure(
+                    graphURL,
+                    "Loaded query body is null or empty."
+                );
                 AnyLoadFailed?.Invoke(null);
                 yield break;
             }
 
-            //just showing that variables might be passed in this way
-            //object variables = new { erasByIdId = erasByIdIdValue };
-            object variables = new { };
+            GraphPostData postData = new GraphPostData(queryText, GetGraphQLVariables());
+            string json = JsonConvert.SerializeObject(postData);
 
-            GraphPostData postData = new GraphPostData(queryText, variables);
-            string json = JsonUtility.ToJson(postData);
-
-            using (UnityWebRequest webRequest = UnityWebRequest.Post(graphURL, json, "application/json"))
-            {
-                if (!string.IsNullOrEmpty(authToken))
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authToken);
-
-                yield return webRequest.SendWebRequest();
-
-                if (webRequest.result != UnityWebRequest.Result.Success)
-                {
-                    DidLoadSucceed = false;
-                    yield return OnRemoteFatalFailure(webRequest);
-                    AnyLoadFailed?.Invoke(webRequest);
-                }
-                else
-                {
-                    DidLoadSucceed = true;
-                    yield return OnRemoteResponseSuccess(webRequest);
-                    yield return AfterAnySuccess(webRequest);
-                    AnyLoadSucceeded?.Invoke(webRequest);
-                }
-            }
+            yield return DoRequestWithRetry(() => UnityWebRequest.Post(graphURL, json, "application/json"));
         }
 
         protected virtual IEnumerator DoRestGetRequest()
@@ -376,27 +429,75 @@ namespace rlmg.Tools.ContentLoading
             if (requestMode != RequestMode.REST_GET)
                 yield break;
 
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(restURL))
+            yield return DoRequestWithRetry(() => UnityWebRequest.Get(restURL));
+        }
+
+        /// <summary>
+        /// Sends a request built by <paramref name="requestFactory"/> (called once per attempt, since a
+        /// UnityWebRequest can't be resent), retrying with backoff on failure up to maxRetryAttempts
+        /// (0 = unlimited) before falling back to local content.
+        /// </summary>
+        protected virtual IEnumerator DoRequestWithRetry(Func<UnityWebRequest> requestFactory)
+        {
+            int attempt = 0;
+
+            while (true)
             {
-                if (!string.IsNullOrEmpty(authToken))
-                    webRequest.SetRequestHeader("Authorization", "Bearer " + authToken);
+                float retryDelaySeconds;
 
-                yield return webRequest.SendWebRequest();
+                using (UnityWebRequest webRequest = requestFactory())
+                {
+                    string token = GetAuthToken();
+                    if (!string.IsNullOrEmpty(token))
+                        webRequest.SetRequestHeader("Authorization", "Bearer " + token);
 
-                if (webRequest.result != UnityWebRequest.Result.Success)
-                {
-                    DidLoadSucceed = false;
-                    yield return OnRemoteFatalFailure(webRequest);
-                    AnyLoadFailed?.Invoke(webRequest);
+                    yield return webRequest.SendWebRequest();
+
+                    if (webRequest.result == UnityWebRequest.Result.Success)
+                    {
+                        DidLoadSucceed = true;
+                        yield return OnRemoteResponseSuccess(webRequest);
+                        yield return AfterAnySuccess(webRequest);
+                        AnyLoadSucceeded?.Invoke(webRequest);
+                        yield break;
+                    }
+
+                    bool canRetry = autoRetryFailedRequests && (maxRetryAttempts <= 0 || attempt < maxRetryAttempts);
+                    if (!canRetry)
+                    {
+                        DidLoadSucceed = false;
+                        yield return OnRemoteFatalFailure(webRequest);
+                        AnyLoadFailed?.Invoke(webRequest);
+                        yield break;
+                    }
+
+                    OnAttemptFailedButWillRetry(webRequest);
+                    AttemptFailedButWillRetry?.Invoke(webRequest);
+
+                    retryDelaySeconds = Mathf.Min(maxRetryBackoffSeconds, initialRetryBackoffSeconds * Mathf.Pow(retryBackoffMultiplier, attempt));
                 }
-                else
-                {
-                    DidLoadSucceed = true;
-                    yield return OnRemoteResponseSuccess(webRequest);
-                    yield return AfterAnySuccess(webRequest);
-                    AnyLoadSucceeded?.Invoke(webRequest);
-                }
+
+                attempt++;
+                OnRetryingRequest(attempt, retryDelaySeconds);
+                RetryingRequest?.Invoke(attempt);
+
+                yield return new WaitForSeconds(retryDelaySeconds);
             }
+        }
+
+        /// <summary>A remote request attempt has failed, but a retry will be attempted.</summary>
+        protected virtual void OnAttemptFailedButWillRetry(UnityWebRequest webRequest)
+        {
+            Debug.LogWarning(string.Format(
+                "GraphQLLoader: request attempt failed, will retry.\n{0}\n{1}",
+                webRequest?.url,
+                webRequest?.error));
+        }
+
+        /// <summary>A retry has been scheduled after a failed remote request, after the given delay.</summary>
+        protected virtual void OnRetryingRequest(int attemptNumber, float delaySeconds)
+        {
+            Debug.LogWarning(string.Format("GraphQLLoader: Retrying (attempt {0}) in {1:F1}s...", attemptNumber, delaySeconds));
         }
 
         /// <summary>
@@ -458,6 +559,29 @@ namespace rlmg.Tools.ContentLoading
             ));
 
             // TODO UI display of error handling and option to try again
+
+            // Fall back to loading content locally
+            yield return LoadLocalContent();
+        }
+
+        /// <summary>
+        /// Callback for graphql request error
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="error"></param>
+        /// <param name="responseText"></param>
+        /// <returns></returns>
+        protected virtual IEnumerator OnRemoteFatalFailure(
+            string url = null,
+            string error = null,
+            string responseText = null)
+        {
+            Debug.LogError(string.Format(
+                "GraphQL response error!\n{0}\n{1}\n{2}\n\nFalling back to locally saved content...",
+                url,
+                error,
+                responseText
+            ));
 
             // Fall back to loading content locally
             yield return LoadLocalContent();
