@@ -20,7 +20,9 @@ namespace rlmg.Tools.ContentLoading
     }
 
     /// <summary>
-    /// 
+    /// Externalized, on-disk override for a CMS-backed content loader's request/caching settings and
+    /// server connection details. Every field defaults to a value meaning "don't override the
+    /// Inspector-configured value," so a config file only needs to set the fields it actually overrides.
     /// </summary>
     [Serializable]
     public class CMSClientConfigData
@@ -99,7 +101,16 @@ namespace rlmg.Tools.ContentLoading
         public string restEndpoint = null;
 
         /// <summary>
-        /// Bearer token for authorization to make requests to the server. This will be added to the request headers when making requests to the server.
+        /// Name of the environment variable to read the auth token from at runtime. Preferred over
+        /// <see cref="authToken"/>: lets ops repoint which token is used without putting the secret
+        /// itself in this file. See GraphQLLoader.GetAuthToken().
+        /// </summary>
+        public string authTokenEnvironmentVariable = null;
+
+        /// <summary>
+        /// Bearer token for authorization to make requests to the server, used only if
+        /// <see cref="authTokenEnvironmentVariable"/> is unset or absent from the environment. Avoid
+        /// setting this to a real token outside local testing - this file is plain text on disk.
         /// </summary>
         public string authToken = null;
 
@@ -112,6 +123,21 @@ namespace rlmg.Tools.ContentLoading
         /// Filename of the GraphQL query to use in the request to the server. This will be read and added to the request body when making requests to the server.
         /// </summary>
         public string queryFileName = null;
+
+        /// <summary>Whether a failed remote request should be retried (with backoff) before falling back to local content. Null = don't override the Inspector value.</summary>
+        public bool? autoRetryFailedRequests = null;
+
+        /// <summary>Maximum retry attempts before falling back to local content. 0 = unlimited. Null = don't override the Inspector value.</summary>
+        public int? maxRetryAttempts = null;
+
+        /// <summary>Delay before the first retry, in seconds. Null = don't override the Inspector value.</summary>
+        public float? initialRetryBackoffSeconds = null;
+
+        /// <summary>Upper bound on retry delay, in seconds. Null = don't override the Inspector value.</summary>
+        public float? maxRetryBackoffSeconds = null;
+
+        /// <summary>Multiplier applied to the retry delay after each attempt. Null = don't override the Inspector value.</summary>
+        public float? retryBackoffMultiplier = null;
     }
 
 }

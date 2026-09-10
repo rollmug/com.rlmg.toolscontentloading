@@ -1,22 +1,21 @@
 {
   "name": "com.rlmg.toolscontentloading",
   "displayName": "RLMG Tools - Content Loading",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "unity": "6000.3",
   "unityRelease": "13f1",
   "description": "A set of Monobehaviours and static Utility classes for Rollmuggers to use when loading content in Unity.",
   "dependencies": {
     "com.unity.test-framework": "1.6.0",
-    "com.unity.textmeshpro": "3.0.6"
+    "com.unity.textmeshpro": "3.0.6",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
   },
   "author": {
     "name": "RLMG",
     "url": "https://rlmg.com",
     "email": "josh@rlmg.com"
   },
-  "changelogUrl": "",
   "documentationUrl": "https://rlmg.bitdocs.ai/share/d/Lul9S5TDc2reWbXJ",
-  "licensesUrl": "",
   "samples": [
     {
       "displayName": "Common Example Assets",
