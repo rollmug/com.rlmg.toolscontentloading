@@ -1738,7 +1738,7 @@ MonoBehaviour:
   DoLoadLocalContentOnly: 0
   contentFileName: config.csv
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/CSV
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:

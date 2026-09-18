@@ -946,8 +946,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -481.70584, y: -334.437}
-  m_SizeDelta: {x: 754.7056, y: 305.7917}
+  m_AnchoredPosition: {x: -481.70584, y: -390.1348}
+  m_SizeDelta: {x: 754.7056, y: 152.1495}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &676994644
 MonoBehaviour:
@@ -2673,7 +2673,7 @@ MonoBehaviour:
   DoLoadLocalContentOnly: 0
   contentFileName: config.json
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/Caching Async
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:
@@ -2742,7 +2742,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -457, y: -122.48114}
+  m_AnchoredPosition: {x: -457, y: -255}
   m_SizeDelta: {x: 804.1198, y: 89.7861}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1426815374
@@ -3210,8 +3210,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -481.7, y: 89.401}
-  m_SizeDelta: {x: 754.71, y: 178.8023}
+  m_AnchoredPosition: {x: -481.7, y: 5.714}
+  m_SizeDelta: {x: 754.71, y: 346.18}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1919288949
 MonoBehaviour:
@@ -3234,7 +3234,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: This example loads from a local file e.g. config.json and then caches it
-    <b>asynchronously</b> to a separate file.
+    <b>asynchronously</b> to a separate file. Caching is so fast, this example prolongs
+    it by an artiificial duration.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

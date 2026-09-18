@@ -2155,7 +2155,7 @@ MonoBehaviour:
   DoLoadLocalContentOnly: 0
   contentFileName: example-content-with-media.json
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/Local Media
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:

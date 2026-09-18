@@ -4,6 +4,7 @@ namespace rlmg.Tools.ContentLoading.Examples
     using System.Collections;
     using UnityEngine;
     using TMPro;
+    using UnityEngine.Events;
 
     /// <summary>
     /// This example shows how multiple ContentLoaders provide a public Coroutine for sequentially executing their loading.
@@ -32,9 +33,9 @@ namespace rlmg.Tools.ContentLoading.Examples
         [SerializeField] List<ContentLoader> loaders;
 
         /// <summary>
-        /// Display fields - cooperatively managed with ExampleContentListeners in this example.
+        /// Callback for UI displays to show starting messages
         /// </summary>
-        [SerializeField] TMP_Text[] statusDisplays, jsonDisplays;
+        public UnityEvent LoaderSequenceStarted;
 
         /// <summary>
         /// Start loading if set to do so.
@@ -54,12 +55,8 @@ namespace rlmg.Tools.ContentLoading.Examples
         /// <returns></returns>
         private IEnumerator LoadAll()
         {
-            foreach (var status in statusDisplays)
-                status.text = "Loading not yet started!";
-
-            foreach (var jsonDisplay in jsonDisplays)
-                jsonDisplay.text = "...";
-
+            LoaderSequenceStarted?.Invoke();
+            
             wait = new WaitForSeconds(waitBetweenLoaders);
 
             for (int i = 0; i < loaders.Count; i++)

@@ -1,0 +1,36 @@
+{
+    "data": {
+        "pokemonspecies": [
+            {
+                "id": 1,
+                "name": "bulbasaur",
+                "url": "",
+                "pokemonspeciesflavortexts": [
+                    {
+                        "flavor_text": "A strange seed was\nplanted on its\nback at birth.\fThe plant sprouts\nand grows with\nthis POKéMON."
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "name": "ivysaur",
+                "url": "",
+                "pokemonspeciesflavortexts": [
+                    {
+                        "flavor_text": "When the bulb on\nits back grows\nlarge, it appears\fto lose the\nability to stand\non its hind legs."
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "name": "venusaur",
+                "url": "",
+                "pokemonspeciesflavortexts": [
+                    {
+                        "flavor_text": "The plant blooms\nwhen it is\nabsorbing solar\fenergy. It stays\non the move to\nseek sunlight."
+                    }
+                ]
+            }
+        ]
+    }
+}

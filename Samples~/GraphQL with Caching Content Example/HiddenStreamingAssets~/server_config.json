@@ -1,0 +1,9 @@
+{
+	"useThisConfig": true,
+	"useServer": true,
+	"contentDirName": "RLMG Content Loading Samples/GraphQL With Caching",
+	"contentFileName": "content.json",
+	"doCache": false,
+	"serverURL": "https://graphql.pokeapi.co",
+	"graphEndpoint": "v1beta2"
+}

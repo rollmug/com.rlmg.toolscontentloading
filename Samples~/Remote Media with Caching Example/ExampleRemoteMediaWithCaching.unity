@@ -3379,7 +3379,7 @@ MonoBehaviour:
   DoLoadLocalContentOnly: 0
   contentFileName: example-remote-media-content.json
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/Remote Media With Caching
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:
@@ -3395,18 +3395,32 @@ MonoBehaviour:
       m_Calls: []
   doLoadLoaderConfigFromDisk: 0
   loaderConfigFileName: 
+  fallbackConfigTextAsset: {fileID: 0}
   requestMode: 0
   doLoadQueryFromDisk: 1
   queryFileName: example_remote_media_query.txt
+  fallbackQueryTextAsset: {fileID: 0}
   queryText: 
   UseServer: 1
   serverURL: https://graphql.pokeapi.co
   graphEndpoint: v1beta2
   assetsEndpoint: 
   restURLOrEndpoint: 
+  authTokenEnvironmentVariable: RLMG_GRAPHQL_AUTH_TOKEN
   authToken: 
   operationName: 
+  autoRetryFailedRequests: 1
+  maxRetryAttempts: 3
+  initialRetryBackoffSeconds: 1
+  maxRetryBackoffSeconds: 15
+  retryBackoffMultiplier: 2
   AnySupportLoadFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  RetryingRequest:
+    m_PersistentCalls:
+      m_Calls: []
+  AttemptFailedButWillRetry:
     m_PersistentCalls:
       m_Calls: []
   imageURL: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-ii/gold/

@@ -514,7 +514,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 893915934}
-  - component: {fileID: 893915933}
+  - component: {fileID: 893915935}
   m_Layer: 0
   m_Name: Example Loader Listener (2)
   m_TagString: Untagged
@@ -522,21 +522,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &893915933
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 893915932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0633843d5d657c47b33a4f507b7e8ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::rlmg.Tools.ContentLoading.Examples.ExampleContentLoaderListener
-  contentLoader: {fileID: 1592279738}
-  heading: {fileID: 1175604709}
-  body: {fileID: 2019109294}
 --- !u!4 &893915934
 Transform:
   m_ObjectHideFlags: 0
@@ -552,6 +537,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &893915935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 893915932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7660ba23b7a85e49911a73707b02053, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RLMG.Tools_contentloading.Samples::rlmg.Tools.ContentLoading.Examples.ExampleSequentialLoaderListener
+  sequentialLoader: {fileID: 1517850931}
+  contentLoader: {fileID: 1592279738}
+  heading: {fileID: 1175604709}
+  body: {fileID: 2019109294}
 --- !u!1 &936408406
 GameObject:
   m_ObjectHideFlags: 0
@@ -593,9 +594,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 936408406}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0633843d5d657c47b33a4f507b7e8ff, type: 3}
+  m_Script: {fileID: 11500000, guid: a7660ba23b7a85e49911a73707b02053, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::rlmg.Tools.ContentLoading.Examples.ExampleContentLoaderListener
+  m_EditorClassIdentifier: RLMG.Tools_contentloading.Samples::rlmg.Tools.ContentLoading.Examples.ExampleSequentialLoaderListener
+  sequentialLoader: {fileID: 1517850931}
   contentLoader: {fileID: 1408708486}
   heading: {fileID: 1717996891}
   body: {fileID: 676994644}
@@ -1201,9 +1203,9 @@ MonoBehaviour:
   doLoadContent: 1
   canUseInEditor: 1
   DoLoadLocalContentOnly: 0
-  contentFileName: config.json
+  contentFileName: example-data.json
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/Sequential Loaders
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:
@@ -1388,12 +1390,9 @@ MonoBehaviour:
   loaders:
   - {fileID: 1408708486}
   - {fileID: 1592279738}
-  statusDisplays:
-  - {fileID: 1717996891}
-  - {fileID: 1175604709}
-  jsonDisplays:
-  - {fileID: 676994644}
-  - {fileID: 2019109294}
+  LoaderSequenceStarted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1517850932
 Transform:
   m_ObjectHideFlags: 0
@@ -1459,9 +1458,9 @@ MonoBehaviour:
   doLoadContent: 1
   canUseInEditor: 1
   DoLoadLocalContentOnly: 0
-  contentFileName: content.json
+  contentFileName: example-content.json
   contentLocationRoot: 0
-  ContentDirName: RLMGExternalData
+  ContentDirName: RLMG Content Loading Samples/Sequential Loaders
   DidLoadSucceed: 0
   AllLoadingStarting:
     m_PersistentCalls:

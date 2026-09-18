@@ -1,0 +1,13 @@
+query samplePokeAPIquery {
+  pokemonspecies(
+    where: {generation: {name: {_eq: "generation-i"}}}
+    order_by: {id: asc}
+    limit: 100
+  ) {
+    name
+    id
+    pokemonspeciesflavortexts(limit: 1) {
+        flavor_text
+    }
+  }
+}
