@@ -7,6 +7,7 @@ Josh (RLMG) @joshkery-rlmg
 
 ### Credits
 - Chris @chrisw-rlmg
+- Hanika @hanikaRLMG
 - Jialu @Jialus
 - Jon @jonyuhas-rlmg
 - Josh (Freelance) @joshuakery
