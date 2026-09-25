@@ -409,7 +409,7 @@ namespace rlmg.Tools.ContentLoading
 
             if (string.IsNullOrEmpty(queryText))
             {
-                DidLoadSucceed = false;
+                SetStatus(LoadStatus.Failed, "Failed: loaded query body is null or empty");
                 yield return OnRemoteFatalFailure(
                     graphURL,
                     "Loaded query body is null or empty."
@@ -455,9 +455,9 @@ namespace rlmg.Tools.ContentLoading
 
                     if (webRequest.result == UnityWebRequest.Result.Success)
                     {
-                        DidLoadSucceed = true;
                         yield return OnRemoteResponseSuccess(webRequest);
                         yield return AfterAnySuccess(webRequest);
+                        SetStatus(LoadStatus.Succeeded, "Succeeded");
                         AnyLoadSucceeded?.Invoke(webRequest);
                         yield break;
                     }
@@ -465,7 +465,7 @@ namespace rlmg.Tools.ContentLoading
                     bool canRetry = autoRetryFailedRequests && (maxRetryAttempts <= 0 || attempt < maxRetryAttempts);
                     if (!canRetry)
                     {
-                        DidLoadSucceed = false;
+                        SetStatus(LoadStatus.Failed, "Failed: " + webRequest.error);
                         yield return OnRemoteFatalFailure(webRequest);
                         AnyLoadFailed?.Invoke(webRequest);
                         yield break;

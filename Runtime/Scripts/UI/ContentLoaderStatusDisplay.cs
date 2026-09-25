@@ -7,21 +7,14 @@ namespace rlmg.Tools.ContentLoading
 
     /// <summary>
     /// Read-only UI display of a <see cref="ContentLoader"/>'s last load outcome: a status Image colored
-    /// per <see cref="LoadStatus"/> and an optional TMP text summary. Listens to the base ContentLoader
-    /// UnityEvents (AllLoadingStarting/AnyLoadSucceeded/AnyLoadFailed) rather than polling, since that
-    /// lifecycle is event-driven. Works for any ContentLoader subclass - e.g. a GraphQLLoader running a
-    /// one-shot startup query.
+    /// per <see cref="LoadStatus"/> and an optional TMP text summary. Reads the loader's current state
+    /// (<see cref="ContentLoader.CurrentStatus"/>/<see cref="ContentLoader.CurrentStatusMessage"/>) on
+    /// enable, so it's correct right away even if enabled after loading has finished, then refreshes on
+    /// each of the base ContentLoader UnityEvents. Works for any ContentLoader subclass - e.g. a
+    /// GraphQLLoader running a one-shot startup query.
     /// </summary>
     public class ContentLoaderStatusDisplay : MonoBehaviour
     {
-        private enum LoadStatus
-        {
-            NotLoaded = 0,
-            Loading = 1,
-            Succeeded = 2,
-            Failed = 3,
-        }
-
         [Header("Content Loader")]
         [SerializeField] private ContentLoader contentLoader;
 
@@ -35,17 +28,15 @@ namespace rlmg.Tools.ContentLoading
         [SerializeField] private Color notLoadedColor = Color.gray;
         [SerializeField] private Color failedColor = Color.red;
 
-        private LoadStatus status = LoadStatus.NotLoaded;
-        private string lastMessage = "Not loaded";
-
         private void OnEnable()
         {
             if (contentLoader == null)
                 return;
 
-            contentLoader.AllLoadingStarting.AddListener(OnLoadingStarting);
-            contentLoader.AnyLoadSucceeded.AddListener(OnLoadSucceeded);
-            contentLoader.AnyLoadFailed.AddListener(OnLoadFailed);
+            contentLoader.AllLoadingStarting.AddListener(OnAllLoadingStarting);
+            contentLoader.AnyLoadSucceeded.AddListener(OnAnyLoadSucceeded);
+            contentLoader.AnyLoadFailed.AddListener(OnAnyLoadFailed);
+            contentLoader.AllLoadingFinished.AddListener(OnAllLoadingFinished);
 
             RefreshDisplay();
         }
@@ -55,45 +46,44 @@ namespace rlmg.Tools.ContentLoading
             if (contentLoader == null)
                 return;
 
-            contentLoader.AllLoadingStarting.RemoveListener(OnLoadingStarting);
-            contentLoader.AnyLoadSucceeded.RemoveListener(OnLoadSucceeded);
-            contentLoader.AnyLoadFailed.RemoveListener(OnLoadFailed);
+            contentLoader.AllLoadingStarting.RemoveListener(OnAllLoadingStarting);
+            contentLoader.AnyLoadSucceeded.RemoveListener(OnAnyLoadSucceeded);
+            contentLoader.AnyLoadFailed.RemoveListener(OnAnyLoadFailed);
+            contentLoader.AllLoadingFinished.RemoveListener(OnAllLoadingFinished);
         }
 
-        private void OnLoadingStarting()
+        private void OnAllLoadingStarting()
         {
-            SetStatus(LoadStatus.Loading, "Loading...");
+            RefreshDisplay();
         }
 
-        private void OnLoadSucceeded(UnityWebRequest webRequest)
+        private void OnAnyLoadSucceeded(UnityWebRequest webRequest)
         {
-            SetStatus(LoadStatus.Succeeded, "Succeeded");
+            RefreshDisplay();
         }
 
-        private void OnLoadFailed(UnityWebRequest webRequest)
+        private void OnAnyLoadFailed(UnityWebRequest webRequest)
         {
-            SetStatus(LoadStatus.Failed, "Failed: " + webRequest?.error);
+            RefreshDisplay();
         }
 
-        private void SetStatus(LoadStatus newStatus, string message)
+        private void OnAllLoadingFinished()
         {
-            status = newStatus;
-            lastMessage = message;
             RefreshDisplay();
         }
 
         private void RefreshDisplay()
         {
             if (statusText != null)
-                statusText.text = lastMessage;
+                statusText.text = contentLoader.CurrentStatusMessage;
 
             if (statusImage == null)
                 return;
 
-            statusImage.color = status switch
+            statusImage.color = contentLoader.CurrentStatus switch
             {
-                LoadStatus.Succeeded => succeededColor,
                 LoadStatus.Loading => loadingColor,
+                LoadStatus.Succeeded => succeededColor,
                 LoadStatus.Failed => failedColor,
                 _ => notLoadedColor,
             };

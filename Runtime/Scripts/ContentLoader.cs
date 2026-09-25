@@ -63,14 +63,30 @@
         protected string ContentDirName = "RLMGExternalData";
 
 		/// <summary>
-		/// Is set to true while the loading routine runs
+		/// Current load status. Set via <see cref="SetStatus"/>.
 		/// </summary>
-        protected bool isLoading;
+        protected LoadStatus currentStatus = LoadStatus.NotYetLoaded;
+
+		/// <summary>
+		/// Human-readable summary of <see cref="currentStatus"/>. Set via <see cref="SetStatus"/>.
+		/// </summary>
+		protected string currentStatusMessage = "Not yet loaded";
+
+		/// <summary>
+		/// Current load status, so listeners (e.g. a status display) can read it right away on enable
+		/// rather than waiting for the next event.
+		/// </summary>
+		public virtual LoadStatus CurrentStatus => currentStatus;
+
+		/// <summary>
+		/// Human-readable summary of <see cref="CurrentStatus"/>.
+		/// </summary>
+		public virtual string CurrentStatusMessage => currentStatusMessage;
 
         /// <summary>
         /// Is set to true after loading the content the first time.
         /// </summary>
-        public bool DidLoadSucceed = false;
+        public virtual bool DidLoadSucceed => currentStatus == LoadStatus.Succeeded;
 
 		/// <summary>
 		/// Callback event at start of LoadContentCoroutine
@@ -142,8 +158,6 @@
 			}
         }
 
-		public virtual bool IsLoading => isLoading;
-
 		/// <summary>
 		/// Placeholder implementation of LoadingProgress
 		/// for overriding in subclasses
@@ -175,8 +189,7 @@
 		/// <returns></returns>
 		public virtual IEnumerator LoadContentCoroutine()
 		{
-			isLoading = true;
-			DidLoadSucceed = false;
+			SetStatus(LoadStatus.Loading, "Loading...");
 
 			AllLoadingStarting?.Invoke();
 
@@ -188,9 +201,21 @@
 					yield return StartCoroutine(MainLoadContent());
 			}
 
-			isLoading = false;
+			// Nothing reported an outcome (e.g. doLoadContent is false)
+			if (currentStatus == LoadStatus.Loading)
+				SetStatus(LoadStatus.NotYetLoaded, "Not yet loaded");
 
 			AllLoadingFinished?.Invoke();
+		}
+
+		/// <summary>
+		/// Updates <see cref="CurrentStatus"/>/<see cref="CurrentStatusMessage"/>.
+		/// Call before invoking the paired UnityEvent, so listeners read the updated status.
+		/// </summary>
+		protected virtual void SetStatus(LoadStatus status, string message)
+		{
+			currentStatus = status;
+			currentStatusMessage = message;
 		}
 		#endregion
 
@@ -227,14 +252,14 @@
 					case UnityWebRequest.Result.ConnectionError:
 					case UnityWebRequest.Result.DataProcessingError:
 					case UnityWebRequest.Result.ProtocolError:
-                        DidLoadSucceed = false;
+                        SetStatus(LoadStatus.Failed, "Failed: " + webRequest.error);
                         yield return OnLocalFailure(webRequest.error, webRequest.url);
 						AnyLoadFailed?.Invoke(webRequest);
 						break;
 					case UnityWebRequest.Result.Success:
-                        DidLoadSucceed = true;
                         yield return OnLocalSuccess(webRequest);
 						yield return AfterAnySuccess(webRequest);
+                        SetStatus(LoadStatus.Succeeded, "Succeeded");
                         AnyLoadSucceeded?.Invoke(webRequest);
                         break;
 				}
