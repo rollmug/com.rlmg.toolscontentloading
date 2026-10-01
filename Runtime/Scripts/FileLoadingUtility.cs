@@ -23,22 +23,16 @@ namespace rlmg.Tools.ContentLoading
         }
 
         /// <summary>
-        /// If remote, return input. Else, assume local, get a cross-platform filepath.
+        /// If local, get a cross-platform filepath. Else, assume remote web address.
         /// </summary>
         /// <param name="rawPath"></param>
         /// <returns></returns>
         public static string GetProperUri(string rawPath)
         {
-            if (string.IsNullOrWhiteSpace(rawPath))
-                return rawPath;
+            if (IsLocalPath(rawPath))
+                return GetProperLocalUri(rawPath);
 
-            if (Uri.TryCreate(rawPath, UriKind.Absolute, out Uri uriResult))
-            {
-                return rawPath;
-            }
-
-            // assume it's a local file path
-            return GetProperLocalUri(rawPath);
+            return rawPath;
         }
 
         /// <summary>
@@ -62,6 +56,38 @@ namespace rlmg.Tools.ContentLoading
 
             // Convert to absolute URI (e.g., file:///C:/... or file:///Users/...)
             return uriBuilder.Uri.AbsoluteUri;
+        }
+
+        public static bool IsLocalPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            // 1. Check if it's a valid URI format
+            if (Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri uri))
+            {
+                // If it's absolute, check if it points to a local file/directory scheme
+                if (uri.IsAbsoluteUri)
+                {
+                    return uri.IsFile;
+                }
+                
+                // 2. Fallback for relative paths (e.g., "folder/file.txt" or "../file.txt")
+                // Relative paths won't parse as absolute URIs, but are valid system paths.
+                try
+                {
+                    // Path.GetFullPath will throw an exception if the string contains 
+                    // invalid path characters (like looking like a bad URL or illegal chars).
+                    string fullPath = Path.GetFullPath(path);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
